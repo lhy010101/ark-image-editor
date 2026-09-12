@@ -12,6 +12,8 @@ The repository is also a [Codex Skill](https://github.com/openai/codex) (`SKILL.
 automatically and drive it on your behalf. Nothing about the skill depends on Codex - the script is a normal CLI
 you can call from a shell, a Makefile, or another automation.
 
+> 中文用户可直接跳到 [中文快速上手](#中文快速上手)。
+
 ## Features
 
 - **No third-party dependencies.** Standard library only (`urllib`, `base64`, `json`), so it runs anywhere
@@ -197,6 +199,88 @@ ark-image-editor/
 | `HTTP 429 ... ServerOverloaded` | Transient capacity issue. The script retries three times with backoff; if it still fails, wait and repeat the identical command. |
 | `HTTP 404` / endpoint not found | Your endpoint id belongs to another account, or the model name is wrong. Set `ARK_IMAGE_ENDPOINT_ID` or pass `--model`. |
 | Output looks nothing like the input | The prompt was too open. Restate the change narrowly and add an explicit preservation clause. |
+
+## 中文快速上手
+
+### 1. 环境要求
+
+- Python 3.8 及以上。脚本只用标准库，不需要安装 `requests` 之类的外部依赖。
+- 火山方舟 API Key，通过环境变量 `ARK_API_KEY` 提供。
+- 能访问 `https://ark.cn-beijing.volces.com`。
+
+### 2. 安装
+
+作为 Codex 技能安装（推荐，装完重启或刷新 Codex 即可被发现）：
+
+```powershell
+git clone https://github.com/lhy010101/ark-image-editor.git "$env:USERPROFILE\.codex\skills\ark-image-editor"
+```
+
+只当作命令行工具用：
+
+```bash
+git clone https://github.com/lhy010101/ark-image-editor.git
+cd ark-image-editor
+```
+
+### 3. 配置 API Key
+
+Windows PowerShell：
+
+```powershell
+$env:ARK_API_KEY = "你的方舟 API Key"    # 只对当前窗口生效
+setx ARK_API_KEY "你的方舟 API Key"      # 永久写入用户环境变量，需重开终端
+```
+
+macOS / Linux：
+
+```bash
+export ARK_API_KEY="你的方舟 API Key"
+```
+
+想用自己的推理接入点（`ep-...`）时，再设一个 `ARK_IMAGE_ENDPOINT_ID`，或在命令里传 `--model ep-xxxx`。
+
+### 4. 两个最常用的命令
+
+文生图：
+
+```bash
+python scripts/ark_image_editor.py generate \
+  --prompt "雨夜上海小巷，电影感照片" \
+  --output out/alley.png
+```
+
+图生图（以换背景为例）：
+
+```bash
+python scripts/ark_image_editor.py edit \
+  --input input/character.jpg \
+  --prompt "保持人物主体完全不变（姿势、配色、线稿、边缘、光影），只把背景换成纯蓝色星空。" \
+  --output out/character_starfield.png
+```
+
+两个要点：所有参数都写在子命令（`edit` 或 `generate`）后面；写编辑提示词时一定要同时说清「改什么」和「什么保持不变」，否则模型容易重画整张图。想先看请求长什么样、又不花钱，加 `--dry-run`。
+
+### 5. 最容易踩的坑：369 万像素下限
+
+`--size` 低于 3,686,400 像素（也就是 1920 x 1920，约 369 万像素）会被直接拒绝，习惯性传 `1024x1024` 就会失败：
+
+```
+HTTP 400 from Ark: InvalidParameter: The parameter `size` specified in the request is not valid:
+image size must be at least 3686400 pixels.
+```
+
+脚本默认已经改成 `2048x2048`（419 万像素）。非正方形素材请按比例放大，例如 3:2 的图用 `--size 2400x1600`。
+
+### 6. 常见问题
+
+| 现象 | 处理方式 |
+| --- | --- |
+| 提示 `ARK_API_KEY is not set` | 设置环境变量，或临时用 `--api-key` 传一次 |
+| 报 `ServerOverloaded`（HTTP 429） | 服务繁忙，脚本会自动退避重试 3 次；仍失败就稍后原样重跑 |
+| 生成结果和原图差别太大 | 提示词太宽泛，改成「只改 X，其余保持不变」的写法再跑一次 |
+| 报 endpoint / model 不存在 | 你的接入点属于别的账号，设置 `ARK_IMAGE_ENDPOINT_ID` 或传 `--model` |
+| 输出后缀和预期不一致 | 按真实格式写盘，要的是 `.png` 但服务端返回 JPEG 时文件会存成 `.jpg`，以脚本打印的路径为准 |
 
 ## Security
 
