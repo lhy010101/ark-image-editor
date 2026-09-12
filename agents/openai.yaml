@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ark Image Editor"
+  short_description: "Generate and edit images via Volcengine Ark"
+  default_prompt: "Use $ark-image-editor to generate a new image, or to edit a local image such as replacing its background."
+policy:
+  allow_implicit_invocation: true
