@@ -146,6 +146,7 @@ python scripts/ark_image_editor.py edit --input character.jpg --prompt "..." --d
 | `--timeout` | Per-request timeout in seconds. Defaults to `300`. |
 | `--overwrite` | Allow overwriting an existing output file. |
 | `--dry-run` | Print the request payload and exit. |
+| `--version` | Print the tool version and exit. |
 
 ## The 3,686,400 pixel minimum (why `1024x1024` fails)
 

@@ -27,6 +27,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+__version__ = "0.1.0"
+
 DEFAULT_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
 DEFAULT_MODEL = "doubao-seedream-4-5-251128"
 DEFAULT_SIZE = "2048x2048"
@@ -349,6 +351,11 @@ def build_parser():
     parser = argparse.ArgumentParser(
         prog="ark_image_editor",
         description="Generate or edit images with Volcengine Ark (Doubao-Seedream 4.5).",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="ark_image_editor {0}".format(__version__),
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
